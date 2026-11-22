@@ -1,9 +1,8 @@
 package com.punto.app.presentation.navigation
 
 object PuntoRoutes {
-    const val WELCOME = "welcome"
-    const val ONBOARDING = "onboarding"
-    const val PERMISSIONS = "permissions"
+    /** Configuración inicial: solo la primera vez que se abre la app. */
+    const val SETUP = "setup"
     const val MAIN = "main"
     const val CREATE_REMINDER = "create_reminder"
     const val EDIT_REMINDER = "create_reminder?reminderId={reminderId}"

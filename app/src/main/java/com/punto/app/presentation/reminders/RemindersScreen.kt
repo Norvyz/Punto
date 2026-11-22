@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -80,19 +81,20 @@ fun RemindersScreen(
                 leadingIcon = { Icon(Icons.Outlined.Search, null) }, singleLine = true,
                 shape = MaterialTheme.shapes.extraLarge,
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(ReminderFilter.entries) { filter ->
                     FilterChip(selected = state.filter == filter, onClick = { viewModel.onFilterChange(filter) }, label = { Text(filter.label) })
                 }
             }
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(10.dp))
             if (filtered.isEmpty()) {
                 EmptyState(Icons.Outlined.NotificationsNone, stringResource(R.string.reminders_empty_title), stringResource(R.string.reminders_empty_desc), Modifier.weight(1f))
             } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxSize()) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxSize()) {
                     items(filtered, key = { it.id }) { reminder ->
                         ReminderManageCard(
+                            modifier = Modifier.animateItem(),
                             reminder = reminder,
                             locationName = state.locationsById[reminder.locationId]?.name ?: "Ubicación desconocida",
                             onEdit = { onEditReminder(reminder.id) },
@@ -101,7 +103,7 @@ fun RemindersScreen(
                             onPause = { viewModel.setStatus(reminder, if (reminder.status == ReminderStatus.PAUSED) ReminderStatus.PENDING else ReminderStatus.PAUSED) },
                         )
                     }
-                    item { Spacer(Modifier.height(80.dp)) }
+                    item { Spacer(Modifier.height(72.dp)) }
                 }
             }
         }
@@ -109,15 +111,23 @@ fun RemindersScreen(
 }
 
 @Composable
-private fun ReminderManageCard(reminder: Reminder, locationName: String, onEdit: () -> Unit, onDelete: () -> Unit, onComplete: () -> Unit, onPause: () -> Unit) {
+private fun ReminderManageCard(modifier: Modifier = Modifier, reminder: Reminder, locationName: String, onEdit: () -> Unit, onDelete: () -> Unit, onComplete: () -> Unit, onPause: () -> Unit) {
     val mock = MockReminder(reminder.id, reminder.title, reminder.subject ?: "General", reminder.description ?: "", locationName, reminder.locationId, reminder.triggerType, reminder.dwellMinutes, reminder.repeatIntervalMinutes, reminder.status, reminder.status.label())
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        ReminderCard(mock)
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.End) {
-            IconButton(onClick = onComplete) { Icon(Icons.Outlined.TaskAlt, contentDescription = "Completar") }
-            IconButton(onClick = onPause) { Icon(if (reminder.status == ReminderStatus.PAUSED) Icons.Outlined.PlayArrow else Icons.Outlined.Pause, contentDescription = "Pausar/Reactivar") }
-            IconButton(onClick = onEdit) { Icon(Icons.Outlined.Edit, contentDescription = "Editar") }
-            IconButton(onClick = onDelete) { Icon(Icons.Outlined.Delete, contentDescription = "Eliminar") }
-        }
-    }
+    ReminderCard(
+        reminder = mock,
+        modifier = modifier,
+        footer = {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                ActionIcon(Icons.Outlined.TaskAlt, "Completar", onComplete)
+                ActionIcon(if (reminder.status == ReminderStatus.PAUSED) Icons.Outlined.PlayArrow else Icons.Outlined.Pause, "Pausar/Reactivar", onPause)
+                ActionIcon(Icons.Outlined.Edit, "Editar", onEdit)
+                ActionIcon(Icons.Outlined.Delete, "Eliminar", onDelete)
+            }
+        },
+    )
+}
+
+@Composable
+private fun ActionIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, description: String, onClick: () -> Unit) {
+    IconButton(onClick = onClick, modifier = Modifier.size(40.dp)) { Icon(icon, contentDescription = description, modifier = Modifier.size(22.dp)) }
 }

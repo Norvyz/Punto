@@ -58,7 +58,8 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.punto.app.R
-import com.punto.app.domain.model.ThemePreference
+import com.punto.app.presentation.components.AccentSwatches
+import com.punto.app.presentation.components.ThemeSegmentedRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,15 +80,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     }
 
     Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.Bold) }) }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             item {
                 SettingsGroup(Icons.Outlined.DarkMode, stringResource(R.string.settings_appearance)) {
-                    val options = listOf(ThemePreference.SYSTEM to R.string.settings_theme_system, ThemePreference.LIGHT to R.string.settings_theme_light, ThemePreference.DARK to R.string.settings_theme_dark)
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        options.forEachIndexed { i, (value, res) ->
-                            SegmentedButton(selected = prefs.theme == value, onClick = { viewModel.setTheme(value) }, shape = SegmentedButtonDefaults.itemShape(i, options.size)) { Text(stringResource(res)) }
-                        }
-                    }
+                    ThemeSegmentedRow(prefs.theme, viewModel::setTheme)
+                    Spacer(Modifier.height(14.dp))
+                    Text("Color", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(10.dp))
+                    AccentSwatches(prefs.accent, viewModel::setAccent)
                 }
             }
             item {
@@ -147,12 +147,12 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 @Composable
 private fun SettingsGroup(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, content: @Composable () -> Unit) {
     Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, null, tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.padding(horizontal = 6.dp))
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             }
-            Spacer(Modifier.height(12.dp)); content()
+            Spacer(Modifier.height(8.dp)); content()
         }
     }
 }

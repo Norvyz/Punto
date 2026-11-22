@@ -18,23 +18,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.punto.app.presentation.mock.MockReminder
 import com.punto.app.presentation.mock.containerColor
+import com.punto.app.presentation.mock.contentColor
 import com.punto.app.presentation.mock.label
 
 @Composable
@@ -50,10 +51,25 @@ fun SectionTitle(title: String, modifier: Modifier = Modifier, action: (@Composa
 }
 
 @Composable
+fun StatusPill(text: String, container: Color, content: Color, modifier: Modifier = Modifier) {
+    Surface(modifier = modifier, shape = CircleShape, color = container, contentColor = content) {
+        Text(
+            text,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+        )
+    }
+}
+
+@Composable
 fun ReminderCard(
     reminder: MockReminder,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
+    footer: (@Composable () -> Unit)? = null,
 ) {
     Card(
         onClick = onClick,
@@ -61,28 +77,27 @@ fun ReminderCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = if (footer == null) 14.dp else 4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(reminder)
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(reminder.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(reminder.subject, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(reminder.subject, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
-                AssistChip(
-                    onClick = {},
-                    label = { Text(reminder.status.label(), style = MaterialTheme.typography.labelSmall) },
-                    colors = AssistChipDefaults.assistChipColors(containerColor = reminder.status.containerColor()),
-                    border = null,
-                )
+                Spacer(Modifier.width(8.dp))
+                StatusPill(reminder.status.label(), reminder.status.containerColor(), reminder.status.contentColor())
             }
-            Spacer(Modifier.height(10.dp))
-            Text(reminder.description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(12.dp))
+            if (reminder.description.isNotBlank()) {
+                Spacer(Modifier.height(8.dp))
+                Text(reminder.description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+            Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MetaItem(Icons.Outlined.LocationOn, reminder.locationName)
                 MetaItem(Icons.Outlined.Schedule, reminder.triggerType.label())
             }
+            footer?.invoke()
         }
     }
 }
@@ -117,18 +132,18 @@ fun EmptyState(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth().padding(32.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            Modifier.size(72.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+            Modifier.size(56.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(32.dp))
+            Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(28.dp))
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
         Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
     }
 }

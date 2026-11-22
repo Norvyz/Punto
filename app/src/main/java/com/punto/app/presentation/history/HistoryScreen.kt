@@ -38,7 +38,7 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
             } else {
                 items(state.completed, key = { it.id }) { reminder ->
                     val loc = state.locationsById[reminder.locationId]?.name ?: "Ubicación"
-                    ReminderCard(MockReminder(reminder.id, reminder.title, reminder.subject ?: "General", reminder.description ?: "", loc, reminder.locationId, reminder.triggerType, reminder.dwellMinutes, reminder.repeatIntervalMinutes, reminder.status, reminder.status.label()))
+                    ReminderCard(modifier = Modifier.animateItem(), reminder = MockReminder(reminder.id, reminder.title, reminder.subject ?: "General", reminder.description ?: "", loc, reminder.locationId, reminder.triggerType, reminder.dwellMinutes, reminder.repeatIntervalMinutes, reminder.status, reminder.status.label()))
                 }
             }
             item { Spacer(Modifier.height(20.dp)) }

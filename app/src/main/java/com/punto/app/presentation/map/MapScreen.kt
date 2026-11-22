@@ -6,10 +6,14 @@ import android.location.Geocoder
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -160,7 +164,7 @@ fun MapScreen(viewModel: MapViewModel = hiltViewModel()) {
     ) { padding ->
         LazyColumn(
             Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
                 CaptureCard(
@@ -183,6 +187,7 @@ fun MapScreen(viewModel: MapViewModel = hiltViewModel()) {
             } else {
                 items(state.locations, key = { it.id }) { location ->
                     LocationRow(
+                        modifier = Modifier.animateItem(),
                         location = location,
                         onEdit = { viewModel.startEdit(location) },
                         onDelete = { pendingDeleteId = location.id },
@@ -190,7 +195,7 @@ fun MapScreen(viewModel: MapViewModel = hiltViewModel()) {
                     )
                 }
             }
-            item { Spacer(Modifier.height(90.dp)) }
+            item { Spacer(Modifier.height(80.dp)) }
         }
     }
 
@@ -245,14 +250,14 @@ private fun CaptureCard(
     onRequestPermission: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().animateContentSize(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                    Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.Outlined.GpsFixed, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -261,7 +266,7 @@ private fun CaptureCard(
                 Column(Modifier.weight(1f)) {
                     Text("Capturar ubicación actual", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "Usa el GPS del teléfono para obtener coordenadas exactas sin depender de un mapa visual.",
+                        "Usa el GPS para guardar un lugar.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -275,37 +280,37 @@ private fun CaptureCard(
                     color = MaterialTheme.colorScheme.error,
                 )
                 OutlinedButton(onClick = onRequestPermission) { Text("Conceder permiso") }
-            } else {
+            } else if (captured == null) {
                 Button(onClick = onCapture, enabled = !isLocating, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Outlined.MyLocation, null)
                     Spacer(Modifier.width(8.dp))
-                    Text(if (isLocating) "Obteniendo ubicación..." else "Obtener mi ubicación actual")
+                    Text(if (isLocating) "Obteniendo ubicación..." else "Obtener mi ubicación")
                 }
-            }
-
-            if (captured != null) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Ubicación capturada", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                        Text("Lat: ${"%.6f".format(captured.latitude)}", style = MaterialTheme.typography.bodyMedium)
-                        Text("Lng: ${"%.6f".format(captured.longitude)}", style = MaterialTheme.typography.bodyMedium)
-                        captured.accuracyMeters?.let {
-                            Text("Precisión: ±${it.toInt()} m", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Text(
-                            captured.address?.takeIf { it.isNotBlank() } ?: "Dirección no disponible (puedes escribirla al guardar).",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Outlined.AddLocationAlt, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Guardar este lugar")
-                        }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        buildString {
+                            append("%.5f, %.5f".format(captured.latitude, captured.longitude))
+                            captured.accuracyMeters?.let { append("  ·  ±${it.toInt()} m") }
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        captured.address?.takeIf { it.isNotBlank() } ?: "Dirección no disponible (puedes escribirla al guardar).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = onCapture, enabled = !isLocating, modifier = Modifier.weight(1f)) {
+                        Text(if (isLocating) "Ubicando..." else "Actualizar")
+                    }
+                    Button(onClick = onSave, modifier = Modifier.weight(1.4f)) {
+                        Icon(Icons.Outlined.AddLocationAlt, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Guardar lugar", maxLines = 1)
                     }
                 }
             }
@@ -314,14 +319,14 @@ private fun CaptureCard(
 }
 
 @Composable
-private fun LocationRow(location: Location, onEdit: () -> Unit, onDelete: () -> Unit, onSelect: () -> Unit) {
+private fun LocationRow(modifier: Modifier = Modifier, location: Location, onEdit: () -> Unit, onDelete: () -> Unit, onSelect: () -> Unit) {
     Card(
         onClick = onSelect,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
@@ -348,7 +353,7 @@ private fun LocationRow(location: Location, onEdit: () -> Unit, onDelete: () -> 
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LocationEditor(
     state: MapUiState,
@@ -360,56 +365,61 @@ private fun LocationEditor(
     onCancel: () -> Unit,
 ) {
     val draft = state.draft
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .imePadding()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(if (state.isEditing) "Editar lugar" else "Guardar lugar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text(
-            "Las coordenadas se capturan desde tu dispositivo. La precisión real depende del GPS, señales disponibles y Android.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    Column(Modifier.fillMaxWidth().imePadding()) {
+        // Zona con scroll: solo si el contenido no cabe (teclado abierto, pantallas pequeñas).
+        Column(
+            Modifier
+                .weight(1f, fill = false)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(if (state.isEditing) "Editar lugar" else "Guardar lugar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            if (draft.latitude != null && draft.longitude != null) {
+                Text(
+                    "%.5f, %.5f".format(draft.latitude, draft.longitude),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
 
-        if (draft.latitude != null && draft.longitude != null) {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow), shape = RoundedCornerShape(12.dp)) {
-                Column(Modifier.padding(12.dp)) {
-                    Text("Coordenadas", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                    Text("Lat: ${"%.6f".format(draft.latitude)}", style = MaterialTheme.typography.bodySmall)
-                    Text("Lng: ${"%.6f".format(draft.longitude)}", style = MaterialTheme.typography.bodySmall)
+            OutlinedTextField(draft.name, onName, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            OutlinedTextField(draft.address, onAddress, label = { Text("Dirección (opcional)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                PlaceCategory.entries.forEach { cat ->
+                    FilterChip(selected = draft.category == cat, onClick = { onCategory(cat) }, label = { Text(cat.label()) })
                 }
             }
-        }
 
-        OutlinedTextField(draft.name, onName, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-        OutlinedTextField(draft.address, onAddress, label = { Text("Dirección (opcional)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-
-        Text("Categoría", style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            PlaceCategory.entries.forEach { cat ->
-                FilterChip(selected = draft.category == cat, onClick = { onCategory(cat) }, label = { Text(cat.label()) })
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Radio", style = MaterialTheme.typography.labelLarge)
+                Spacer(Modifier.width(12.dp))
+                Slider(
+                    value = draft.radiusMeters.toFloat(),
+                    onValueChange = { onRadius(it.toInt()) },
+                    valueRange = 50f..500f,
+                    steps = 8,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                Text("${draft.radiusMeters} m", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             }
         }
 
-        Text("Radio de detección: ${draft.radiusMeters} m", style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(50, 100, 150, 300).forEach { r ->
-                FilterChip(selected = draft.radiusMeters == r, onClick = { onRadius(r) }, label = { Text("$r m") })
-            }
-        }
-        Slider(value = draft.radiusMeters.toFloat(), onValueChange = { onRadius(it.toInt()) }, valueRange = 50f..500f, steps = 8)
-
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+        // Botones siempre visibles: ya no hace falta bajar para confirmar.
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text("Cancelar") }
             Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.weight(1f)) {
                 Text(if (state.isSaving) "Guardando..." else "Guardar lugar")
             }
         }
-        Spacer(Modifier.height(32.dp))
     }
 }
 

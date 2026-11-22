@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.punto.app.R
+import com.punto.app.presentation.components.EmptyState
 import com.punto.app.presentation.components.ReminderCard
 import com.punto.app.presentation.components.SectionTitle
 import com.punto.app.presentation.mock.MockReminder
@@ -53,8 +54,7 @@ fun HomeScreen(onCreateReminder: () -> Unit = {}, onSeeAll: () -> Unit = {}, vie
             ExtendedFloatingActionButton(onClick = onCreateReminder, icon = { Icon(Icons.Outlined.Add, null) }, text = { Text(stringResource(R.string.home_quick_create)) })
         }
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            item { Spacer(Modifier.height(8.dp)) }
+        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
                 Text(stringResource(R.string.home_greeting), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
@@ -68,11 +68,20 @@ fun HomeScreen(onCreateReminder: () -> Unit = {}, onSeeAll: () -> Unit = {}, vie
                 }
             }
             item { SectionTitle(stringResource(R.string.home_upcoming), action = { TextButton(onClick = onSeeAll) { Text(stringResource(R.string.home_see_all)) } }) }
+            if (state.upcoming.isEmpty()) {
+                item {
+                    EmptyState(
+                        Icons.Outlined.NotificationsActive,
+                        stringResource(R.string.reminders_empty_title),
+                        stringResource(R.string.reminders_empty_desc),
+                    )
+                }
+            }
             items(state.upcoming, key = { it.id }) { reminder ->
                 val loc = state.locationsById[reminder.locationId]?.name ?: "Ubicación"
-                ReminderCard(MockReminder(reminder.id, reminder.title, reminder.subject ?: "General", reminder.description ?: "", loc, reminder.locationId, reminder.triggerType, reminder.dwellMinutes, reminder.repeatIntervalMinutes, reminder.status, reminder.status.label()))
+                ReminderCard(modifier = Modifier.animateItem(), reminder = MockReminder(reminder.id, reminder.title, reminder.subject ?: "General", reminder.description ?: "", loc, reminder.locationId, reminder.triggerType, reminder.dwellMinutes, reminder.repeatIntervalMinutes, reminder.status, reminder.status.label()))
             }
-            item { Spacer(Modifier.height(80.dp)) }
+            item { Spacer(Modifier.height(72.dp)) }
         }
     }
 }
@@ -80,11 +89,11 @@ fun HomeScreen(onCreateReminder: () -> Unit = {}, onSeeAll: () -> Unit = {}, vie
 @Composable
 private fun StatCard(modifier: Modifier, icon: androidx.compose.ui.graphics.vector.ImageVector, value: String, label: String) {
     Card(modifier = modifier, shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        Column(Modifier.padding(14.dp)) {
+        Column(Modifier.padding(12.dp)) {
             Box(Modifier.size(34.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
                 Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(18.dp))
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
             Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

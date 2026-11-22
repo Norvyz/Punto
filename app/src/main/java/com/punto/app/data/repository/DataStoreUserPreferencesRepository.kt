@@ -1,6 +1,7 @@
 package com.punto.app.data.repository
 
 import com.punto.app.data.local.datastore.UserPreferencesDataSource
+import com.punto.app.domain.model.AccentColor
 import com.punto.app.domain.model.ThemePreference
 import com.punto.app.domain.repository.UserPreferences
 import com.punto.app.domain.repository.UserPreferencesRepository
@@ -16,6 +17,8 @@ class DataStoreUserPreferencesRepository @Inject constructor(
     override val preferences: Flow<UserPreferences> = dataSource.preferences
 
     override suspend fun setTheme(theme: ThemePreference) = dataSource.setTheme(theme)
+    override suspend fun setAccent(accent: AccentColor) = dataSource.setAccent(accent)
+    override suspend fun setOnboardingCompleted(completed: Boolean) = dataSource.setOnboardingCompleted(completed)
     override suspend fun setDefaultRadiusMeters(value: Int) = dataSource.setDefaultRadiusMeters(value)
     override suspend fun setDefaultDwellMinutes(value: Int) = dataSource.setDefaultDwellMinutes(value)
     override suspend fun setDefaultRepeatIntervalMinutes(value: Int) = dataSource.setDefaultRepeatIntervalMinutes(value)

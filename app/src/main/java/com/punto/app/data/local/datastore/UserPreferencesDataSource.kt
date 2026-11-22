@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.punto.app.domain.model.AccentColor
 import com.punto.app.domain.model.ThemePreference
 import com.punto.app.domain.repository.UserPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,6 +37,10 @@ class UserPreferencesDataSource @Inject constructor(
                 theme = prefs[Keys.THEME]
                     ?.let { runCatching { ThemePreference.valueOf(it) }.getOrNull() }
                     ?: ThemePreference.SYSTEM,
+                accent = prefs[Keys.ACCENT]
+                    ?.let { runCatching { AccentColor.valueOf(it) }.getOrNull() }
+                    ?: AccentColor.TEAL,
+                onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false,
                 defaultRadiusMeters = prefs[Keys.DEFAULT_RADIUS_METERS] ?: 150,
                 defaultDwellMinutes = prefs[Keys.DEFAULT_DWELL_MINUTES] ?: 30,
                 defaultRepeatIntervalMinutes = prefs[Keys.DEFAULT_REPEAT_INTERVAL_MINUTES] ?: 30,
@@ -47,6 +52,8 @@ class UserPreferencesDataSource @Inject constructor(
         }
 
     suspend fun setTheme(theme: ThemePreference) { context.userPreferencesDataStore.edit { it[Keys.THEME] = theme.name } }
+    suspend fun setAccent(accent: AccentColor) { context.userPreferencesDataStore.edit { it[Keys.ACCENT] = accent.name } }
+    suspend fun setOnboardingCompleted(completed: Boolean) { context.userPreferencesDataStore.edit { it[Keys.ONBOARDING_COMPLETED] = completed } }
     suspend fun setDefaultRadiusMeters(value: Int) { context.userPreferencesDataStore.edit { it[Keys.DEFAULT_RADIUS_METERS] = value } }
     suspend fun setDefaultDwellMinutes(value: Int) { context.userPreferencesDataStore.edit { it[Keys.DEFAULT_DWELL_MINUTES] = value } }
     suspend fun setDefaultRepeatIntervalMinutes(value: Int) { context.userPreferencesDataStore.edit { it[Keys.DEFAULT_REPEAT_INTERVAL_MINUTES] = value } }
@@ -57,6 +64,8 @@ class UserPreferencesDataSource @Inject constructor(
 
     private object Keys {
         val THEME = stringPreferencesKey("theme")
+        val ACCENT = stringPreferencesKey("accent")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val DEFAULT_RADIUS_METERS = intPreferencesKey("default_radius_meters")
         val DEFAULT_DWELL_MINUTES = intPreferencesKey("default_dwell_minutes")
         val DEFAULT_REPEAT_INTERVAL_MINUTES = intPreferencesKey("default_repeat_interval_minutes")

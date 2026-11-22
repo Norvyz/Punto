@@ -4,9 +4,9 @@
     <!-- Navigation -->
     <string name="nav_home">Inicio</string>
     <string name="nav_map">Mapa</string>
-    <string name="nav_reminders">Recordatorios</string>
+    <string name="nav_reminders">Avisos</string>
     <string name="nav_history">Historial</string>
-    <string name="nav_settings">Configuración</string>
+    <string name="nav_settings">Ajustes</string>
 
     <!-- Welcome / onboarding -->
     <string name="welcome_title">Recuerda justo cuando lo necesitas</string>
@@ -14,7 +14,7 @@
     <string name="welcome_start">Comenzar</string>
     <string name="welcome_skip">Saltar</string>
     <string name="onboarding_next">Siguiente</string>
-    <string name="onboarding_done">Empezar a usar Punto</string>
+    <string name="onboarding_done">Empezar</string>
     <string name="onboarding_1_title">Guarda tus lugares</string>
     <string name="onboarding_1_desc">Registra casa, trabajo o cualquier lugar importante con un radio de detección.</string>
     <string name="onboarding_2_title">Crea recordatorios con contexto</string>
@@ -56,13 +56,13 @@
     <string name="create_edit_title">Editar recordatorio</string>
     <string name="create_save">Guardar</string>
     <string name="create_name">Nombre</string>
-    <string name="create_subject">Asunto / categoría</string>
+    <string name="create_subject">Asunto</string>
     <string name="create_description">Descripción</string>
     <string name="create_location">Ubicación</string>
-    <string name="create_trigger">Tipo de activación</string>
-    <string name="create_dwell">Tiempo de permanencia</string>
-    <string name="create_repeat">Intervalo de repetición</string>
-    <string name="create_limit">Límite de notificaciones</string>
+    <string name="create_trigger">Cuándo avisar</string>
+    <string name="create_dwell">Permanencia</string>
+    <string name="create_repeat">Repetir cada</string>
+    <string name="create_limit">Máx. avisos</string>
     <string name="create_saved">Recordatorio guardado (demo)</string>
 
     <!-- Locations -->

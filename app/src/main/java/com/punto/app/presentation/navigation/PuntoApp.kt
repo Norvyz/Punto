@@ -1,15 +1,28 @@
 package com.punto.app.presentation.navigation
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -19,25 +32,30 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.punto.app.presentation.createreminder.CreateReminderScreen
-import com.punto.app.presentation.onboarding.OnboardingScreen
-import com.punto.app.presentation.permissions.PermissionsScreen
-import com.punto.app.presentation.welcome.WelcomeScreen
+import com.punto.app.presentation.setup.SetupScreen
+
+private const val NAV_ANIM_MS = 320
 
 @Composable
-fun PuntoApp() {
+fun PuntoApp(onboardingCompleted: Boolean) {
     val rootNavController = rememberNavController()
-    NavHost(navController = rootNavController, startDestination = PuntoRoutes.WELCOME) {
-        composable(PuntoRoutes.WELCOME) {
-            WelcomeScreen(
-                onStart = { rootNavController.navigate(PuntoRoutes.ONBOARDING) },
-                onSkip = { rootNavController.navigate(PuntoRoutes.MAIN) { popUpTo(PuntoRoutes.WELCOME) { inclusive = true } } },
+    // Se decide una sola vez: si cambiara con el estado, NavHost reiniciaría el grafo.
+    val startDestination = remember { if (onboardingCompleted) PuntoRoutes.MAIN else PuntoRoutes.SETUP }
+
+    NavHost(
+        navController = rootNavController,
+        startDestination = startDestination,
+        enterTransition = { fadeIn(tween(NAV_ANIM_MS)) + slideInHorizontally(tween(NAV_ANIM_MS)) { it / 8 } },
+        exitTransition = { fadeOut(tween(NAV_ANIM_MS / 2)) },
+        popEnterTransition = { fadeIn(tween(NAV_ANIM_MS)) },
+        popExitTransition = { fadeOut(tween(NAV_ANIM_MS / 2)) + slideOutHorizontally(tween(NAV_ANIM_MS)) { it / 8 } },
+    ) {
+        composable(PuntoRoutes.SETUP) {
+            SetupScreen(
+                onFinished = {
+                    rootNavController.navigate(PuntoRoutes.MAIN) { popUpTo(PuntoRoutes.SETUP) { inclusive = true } }
+                },
             )
-        }
-        composable(PuntoRoutes.ONBOARDING) {
-            OnboardingScreen(onFinish = { rootNavController.navigate(PuntoRoutes.PERMISSIONS) { popUpTo(PuntoRoutes.WELCOME) { inclusive = true } } })
-        }
-        composable(PuntoRoutes.PERMISSIONS) {
-            PermissionsScreen(onContinue = { rootNavController.navigate(PuntoRoutes.MAIN) { popUpTo(PuntoRoutes.WELCOME) { inclusive = true } } })
         }
         composable(PuntoRoutes.MAIN) {
             MainScaffold(
@@ -66,9 +84,17 @@ private fun MainScaffold(onCreateReminder: () -> Unit, onEditReminder: (String) 
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 0.dp,
+            ) {
                 destinations.forEach { destination ->
                     val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
+                    val iconScale by animateFloatAsState(
+                        targetValue = if (selected) 1.12f else 1f,
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+                        label = "navIconScale",
+                    )
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
@@ -78,8 +104,24 @@ private fun MainScaffold(onCreateReminder: () -> Unit, onEditReminder: (String) 
                                 restoreState = true
                             }
                         },
-                        icon = { Icon(if (selected) destination.selectedIcon else destination.unselectedIcon, contentDescription = stringResource(destination.labelRes)) },
-                        label = { Text(stringResource(destination.labelRes)) },
+                        icon = {
+                            Icon(
+                                if (selected) destination.selectedIcon else destination.unselectedIcon,
+                                contentDescription = null,
+                                modifier = Modifier.scale(iconScale),
+                            )
+                        },
+                        // Una sola línea siempre: etiquetas cortas + sin salto de línea.
+                        label = {
+                            Text(
+                                stringResource(destination.labelRes),
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
+                        alwaysShowLabel = true,
                     )
                 }
             }

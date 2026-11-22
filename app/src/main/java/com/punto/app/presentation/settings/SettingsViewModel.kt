@@ -3,6 +3,7 @@ package com.punto.app.presentation.settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.punto.app.domain.model.AccentColor
 import com.punto.app.domain.model.ThemePreference
 import com.punto.app.domain.repository.UserPreferences
 import com.punto.app.domain.repository.UserPreferencesRepository
@@ -25,6 +26,7 @@ class SettingsViewModel @Inject constructor(
     )
 
     fun setTheme(v: ThemePreference) = launch { prefs.setTheme(v) }
+    fun setAccent(v: AccentColor) = launch { prefs.setAccent(v) }
     fun setDefaultRadius(v: Int) = launch { prefs.setDefaultRadiusMeters(v) }
     fun setDefaultDwell(v: Int) = launch { prefs.setDefaultDwellMinutes(v) }
     fun setDefaultRepeat(v: Int) = launch { prefs.setDefaultRepeatIntervalMinutes(v) }

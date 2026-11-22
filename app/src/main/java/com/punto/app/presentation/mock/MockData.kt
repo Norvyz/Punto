@@ -1,5 +1,7 @@
 package com.punto.app.presentation.mock
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.punto.app.domain.model.PlaceCategory
 import com.punto.app.domain.model.ReminderStatus
@@ -76,11 +78,18 @@ fun ReminderStatus.label(): String = when (this) {
     ReminderStatus.PAUSED -> "Pausado"
 }
 
+@Composable
 fun ReminderStatus.containerColor(): Color = when (this) {
-    ReminderStatus.ACTIVE -> Color(0xFFA1F0EC)
-    ReminderStatus.WAITING_ARRIVAL, ReminderStatus.WAITING_DWELL -> Color(0xFFFFDDB5)
-    ReminderStatus.SNOOZED -> Color(0xFFCCE8E5)
-    ReminderStatus.COMPLETED -> Color(0xFFD7E8D0)
-    ReminderStatus.PAUSED -> Color(0xFFE2E3E3)
-    ReminderStatus.PENDING -> Color(0xFFDAE5E3)
+    ReminderStatus.ACTIVE -> MaterialTheme.colorScheme.primaryContainer
+    ReminderStatus.WAITING_ARRIVAL, ReminderStatus.WAITING_DWELL, ReminderStatus.SNOOZED -> MaterialTheme.colorScheme.tertiaryContainer
+    ReminderStatus.COMPLETED -> MaterialTheme.colorScheme.secondaryContainer
+    ReminderStatus.PAUSED, ReminderStatus.PENDING -> MaterialTheme.colorScheme.surfaceContainerHighest
+}
+
+@Composable
+fun ReminderStatus.contentColor(): Color = when (this) {
+    ReminderStatus.ACTIVE -> MaterialTheme.colorScheme.onPrimaryContainer
+    ReminderStatus.WAITING_ARRIVAL, ReminderStatus.WAITING_DWELL, ReminderStatus.SNOOZED -> MaterialTheme.colorScheme.onTertiaryContainer
+    ReminderStatus.COMPLETED -> MaterialTheme.colorScheme.onSecondaryContainer
+    ReminderStatus.PAUSED, ReminderStatus.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
 }
