@@ -15,13 +15,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddLocationAlt
 import androidx.compose.material.icons.outlined.Delete
@@ -357,7 +360,14 @@ private fun LocationEditor(
     onCancel: () -> Unit,
 ) {
     val draft = state.draft
-    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .imePadding()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         Text(if (state.isEditing) "Editar lugar" else "Guardar lugar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(
             "Las coordenadas se capturan desde tu dispositivo. La precisión real depende del GPS, señales disponibles y Android.",
@@ -393,13 +403,13 @@ private fun LocationEditor(
         }
         Slider(value = draft.radiusMeters.toFloat(), onValueChange = { onRadius(it.toInt()) }, valueRange = 50f..500f, steps = 8)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text("Cancelar") }
             Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.weight(1f)) {
-                Text(if (state.isSaving) "Guardando..." else "Guardar")
+                Text(if (state.isSaving) "Guardando..." else "Guardar lugar")
             }
         }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(32.dp))
     }
 }
 
