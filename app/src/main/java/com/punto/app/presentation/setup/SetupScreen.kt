@@ -75,11 +75,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-private const val PAGE_COUNT = 4
+private const val PAGE_COUNT = 6
 
 /**
- * Configuración inicial (solo la primera vez): bienvenida, cómo funciona,
- * apariencia (tema + color) y permisos.
+ * Configuración inicial (solo la primera vez): bienvenida, tutorial animado de 3 pasos
+ * (guardar lugar, crear recordatorio, recibir aviso), apariencia (tema + color) y permisos.
+ * También se reutiliza desde Ajustes ("Ver tutorial").
  */
 @Composable
 fun SetupScreen(onFinished: () -> Unit, viewModel: SetupViewModel = hiltViewModel()) {
@@ -114,8 +115,10 @@ fun SetupScreen(onFinished: () -> Unit, viewModel: SetupViewModel = hiltViewMode
                 val active = pagerState.currentPage == page
                 when (page) {
                     0 -> WelcomePage(active)
-                    1 -> HowItWorksPage(active)
-                    2 -> AppearancePage(
+                    1 -> TutorialPage(active, 1, R.string.onboarding_1_title, R.string.onboarding_1_desc) { PlaceAnimation(active) }
+                    2 -> TutorialPage(active, 2, R.string.onboarding_2_title, R.string.onboarding_2_desc) { ReminderAnimation(active) }
+                    3 -> TutorialPage(active, 3, R.string.onboarding_3_title, R.string.onboarding_3_desc) { AlertAnimation(active) }
+                    4 -> AppearancePage(
                         active = active,
                         theme = prefs.theme,
                         accent = prefs.accent,
@@ -243,47 +246,35 @@ private fun WelcomePage(active: Boolean) {
     }
 }
 
-// ───────────────────────── Página 2: cómo funciona ─────────────────────────
+// ───────────────────────── Páginas 2-4: tutorial animado ─────────────────────────
 
+/** Una página del tutorial: "Paso N de 3", la ilustración animada y su explicación. */
 @Composable
-private fun HowItWorksPage(active: Boolean) {
+private fun TutorialPage(
+    active: Boolean,
+    step: Int,
+    titleRes: Int,
+    descRes: Int,
+    illustration: @Composable () -> Unit,
+) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.height(8.dp))
-        PageHeader("Así funciona", "Tres pasos y listo.", active)
-        Spacer(Modifier.height(20.dp))
-        val steps = listOf(
-            Triple(Icons.Outlined.Place, R.string.onboarding_1_title, R.string.onboarding_1_desc),
-            Triple(Icons.Outlined.Map, R.string.onboarding_2_title, R.string.onboarding_2_desc),
-            Triple(Icons.Outlined.NotificationsActive, R.string.onboarding_3_title, R.string.onboarding_3_desc),
-        )
-        steps.forEachIndexed { i, (icon, title, desc) ->
-            Reveal(active, 150 * (i + 1)) { StepRow(icon, stringResource(title), stringResource(desc)) }
-            Spacer(Modifier.height(10.dp))
+        Reveal(active) {
+            Text(
+                stringResource(R.string.tutorial_step, step),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
+        Spacer(Modifier.height(16.dp))
+        Reveal(active, 100) { illustration() }
+        Spacer(Modifier.height(24.dp))
+        PageHeader(stringResource(titleRes), stringResource(descRes), active, 250)
     }
 }
 
-@Composable
-private fun StepRow(icon: ImageVector, title: String, desc: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-                Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
-            }
-            Spacer(Modifier.width(14.dp))
-            Column {
-                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                Text(desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-    }
-}
-
-// ───────────────────────── Página 3: apariencia ─────────────────────────
+// ───────────────────────── Página 5: apariencia ─────────────────────────
 
 @Composable
 private fun AppearancePage(
@@ -345,7 +336,7 @@ private fun PreviewCard() {
     }
 }
 
-// ───────────────────────── Página 4: permisos ─────────────────────────
+// ───────────────────────── Página 6: permisos ─────────────────────────
 
 @Composable
 private fun PermissionsPage(active: Boolean) {

@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.Tune
@@ -63,7 +64,7 @@ import com.punto.app.presentation.components.ThemeSegmentedRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(onShowTutorial: () -> Unit = {}, viewModel: SettingsViewModel = hiltViewModel()) {
     val prefs by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var refreshTick by remember { mutableIntStateOf(0) }
@@ -122,6 +123,13 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     OptionRow("Posponer por defecto", "${prefs.defaultSnoozeMinutes} min", listOf(5, 10, 15, 30, 60)) { viewModel.setDefaultSnooze(it) }
                     val limitLabel = prefs.defaultMaxNotifications?.let { "$it avisos" } ?: "Sin límite"
                     OptionRow("Límite de avisos", limitLabel, listOf<Int?>(null, 3, 5, 10)) { viewModel.setDefaultMax(it) }
+                }
+            }
+            item {
+                SettingsGroup(Icons.Outlined.Info, stringResource(R.string.settings_help)) {
+                    Text(stringResource(R.string.settings_replay_tutorial_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = onShowTutorial) { Text(stringResource(R.string.settings_replay_tutorial)) }
                 }
             }
             item {

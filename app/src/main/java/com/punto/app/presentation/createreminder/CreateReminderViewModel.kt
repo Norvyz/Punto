@@ -34,7 +34,8 @@ class CreateReminderViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val reminderId: String? = savedStateHandle["reminderId"]
-    private val _uiState = MutableStateFlow(CreateReminderUiState(reminderId = reminderId))
+    // En "crear" no hay nada que cargar, así que los textos ya están listos desde el inicio.
+    private val _uiState = MutableStateFlow(CreateReminderUiState(reminderId = reminderId, initialLoaded = reminderId == null))
     val uiState: StateFlow<CreateReminderUiState> = _uiState.asStateFlow()
 
     init {
@@ -56,6 +57,7 @@ class CreateReminderViewModel @Inject constructor(
                             name = reminder.title,
                             subject = reminder.subject.orEmpty(),
                             description = reminder.description.orEmpty(),
+                            initialLoaded = true,
                             selectedLocationId = reminder.locationId,
                             triggerType = reminder.triggerType,
                             dwellMinutes = reminder.dwellMinutes ?: 30,
@@ -75,9 +77,7 @@ class CreateReminderViewModel @Inject constructor(
         }
     }
 
-    fun onName(v: String) = _uiState.update { it.copy(name = v) }
-    fun onSubject(v: String) = _uiState.update { it.copy(subject = v) }
-    fun onDescription(v: String) = _uiState.update { it.copy(description = v) }
+    // Los textos (nombre, asunto, descripción) ya no pasan por aquí en cada tecla: llegan al guardar.
     fun onLocation(id: String) = _uiState.update { it.copy(selectedLocationId = id) }
     fun onTrigger(type: TriggerType) = _uiState.update { it.copy(triggerType = type) }
     fun onDwell(minutes: Int) = _uiState.update { it.copy(dwellMinutes = minutes) }
@@ -86,13 +86,14 @@ class CreateReminderViewModel @Inject constructor(
     fun onStatus(status: ReminderStatus) = _uiState.update { it.copy(status = status) }
     fun dismissError() = _uiState.update { it.copy(errorMessage = null) }
 
-    fun save() {
+    fun save(name: String, subject: String, description: String) {
         val state = _uiState.value
+        if (state.isSaving) return
         val locationId = state.selectedLocationId ?: run {
             _uiState.update { it.copy(errorMessage = "Selecciona una ubicación.") }
             return
         }
-        if (state.name.isBlank()) {
+        if (name.isBlank()) {
             _uiState.update { it.copy(errorMessage = "El nombre es obligatorio.") }
             return
         }
@@ -100,9 +101,9 @@ class CreateReminderViewModel @Inject constructor(
         val reminder = Reminder(
             id = state.reminderId ?: UUID.randomUUID().toString(),
             locationId = locationId,
-            title = state.name.trim(),
-            subject = state.subject.trim().ifBlank { null },
-            description = state.description.trim().ifBlank { null },
+            title = name.trim(),
+            subject = subject.trim().ifBlank { null },
+            description = description.trim().ifBlank { null },
             triggerType = state.triggerType,
             dwellMinutes = if (state.triggerType == TriggerType.ON_DWELL) state.dwellMinutes else null,
             repeatIntervalMinutes = state.repeatIntervalMinutes,

@@ -63,6 +63,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,6 +83,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.punto.app.R
+import com.punto.app.presentation.components.StateOutlinedTextField
 import com.punto.app.domain.model.Location
 import com.punto.app.domain.model.PlaceCategory
 import com.punto.app.presentation.components.EmptyState
@@ -229,11 +231,9 @@ fun MapScreen(viewModel: MapViewModel = hiltViewModel()) {
         ModalBottomSheet(onDismissRequest = viewModel::closeEditor, sheetState = sheetState) {
             LocationEditor(
                 state = state,
-                onName = { viewModel.updateDraft { d -> d.copy(name = it) } },
                 onCategory = { viewModel.updateDraft { d -> d.copy(category = it) } },
-                onAddress = { viewModel.updateDraft { d -> d.copy(address = it) } },
                 onRadius = { viewModel.updateDraft { d -> d.copy(radiusMeters = it) } },
-                onSave = viewModel::saveDraft,
+                onSave = { name, address -> viewModel.saveDraft(name, address) },
                 onCancel = viewModel::closeEditor,
             )
         }
@@ -357,14 +357,16 @@ private fun LocationRow(modifier: Modifier = Modifier, location: Location, onEdi
 @Composable
 private fun LocationEditor(
     state: MapUiState,
-    onName: (String) -> Unit,
     onCategory: (PlaceCategory) -> Unit,
-    onAddress: (String) -> Unit,
     onRadius: (Int) -> Unit,
-    onSave: () -> Unit,
+    onSave: (name: String, address: String) -> Unit,
     onCancel: () -> Unit,
 ) {
     val draft = state.draft
+    // Nombre y dirección en estado local: escribir no recompone toda la hoja ni pasa por el ViewModel.
+    // Se inicializan una sola vez al abrir la hoja (con el borrador actual) y se envían al guardar.
+    val nameState = rememberSaveable { mutableStateOf(draft.name) }
+    val addressState = rememberSaveable { mutableStateOf(draft.address) }
     Column(Modifier.fillMaxWidth().imePadding()) {
         // Zona con scroll: solo si el contenido no cabe (teclado abierto, pantallas pequeñas).
         Column(
@@ -383,8 +385,8 @@ private fun LocationEditor(
                 )
             }
 
-            OutlinedTextField(draft.name, onName, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-            OutlinedTextField(draft.address, onAddress, label = { Text("Dirección (opcional)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            StateOutlinedTextField(nameState, "Nombre", Modifier.fillMaxWidth())
+            StateOutlinedTextField(addressState, "Dirección (opcional)", Modifier.fillMaxWidth())
 
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
                 PlaceCategory.entries.forEach { cat ->
@@ -416,7 +418,7 @@ private fun LocationEditor(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text("Cancelar") }
-            Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.weight(1f)) {
+            Button(onClick = { onSave(nameState.value, addressState.value) }, enabled = !state.isSaving, modifier = Modifier.weight(1f)) {
                 Text(if (state.isSaving) "Guardando..." else "Guardar lugar")
             }
         }

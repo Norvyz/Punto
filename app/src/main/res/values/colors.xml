@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores del splash e intro de arranque (el intro en Compose usa los mismos para que la transición sea continua). -->
+    <color name="punto_splash_background">#F4FAF9</color>
+    <color name="punto_splash_icon">#0B6E6B</color>
+</resources>
