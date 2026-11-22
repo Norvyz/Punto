@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Local-first app; cloud backup rules refined in later phases. -->
+    </cloud-backup>
+    <device-transfer>
+    </device-transfer>
+</data-extraction-rules>

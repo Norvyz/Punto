@@ -1,0 +1,102 @@
+<resources>
+    <string name="app_name">Punto</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_map">Mapa</string>
+    <string name="nav_reminders">Recordatorios</string>
+    <string name="nav_history">Historial</string>
+    <string name="nav_settings">Configuración</string>
+
+    <!-- Welcome / onboarding -->
+    <string name="welcome_title">Recuerda justo cuando lo necesitas</string>
+    <string name="welcome_subtitle">Punto te ayuda a recordar tus tareas en el lugar correcto, sin alarmas innecesarias.</string>
+    <string name="welcome_start">Comenzar</string>
+    <string name="welcome_skip">Saltar</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_done">Empezar a usar Punto</string>
+    <string name="onboarding_1_title">Guarda tus lugares</string>
+    <string name="onboarding_1_desc">Registra casa, trabajo o cualquier lugar importante con un radio de detección.</string>
+    <string name="onboarding_2_title">Crea recordatorios con contexto</string>
+    <string name="onboarding_2_desc">Asocia tareas a lugares y elige si quieres avisos al llegar, permanecer o salir.</string>
+    <string name="onboarding_3_title">Recibe avisos oportunos</string>
+    <string name="onboarding_3_desc">Punto te recuerda en el momento adecuado y puede repetir hasta que lo completes.</string>
+
+    <!-- Permissions -->
+    <string name="permissions_title">Permisos necesarios</string>
+    <string name="permissions_subtitle">Punto usa la ubicación solo para activar tus recordatorios en el lugar correcto.</string>
+    <string name="perm_location_title">Ubicación</string>
+    <string name="perm_location_desc">Permite detectar cuando llegas o sales de tus lugares guardados.</string>
+    <string name="perm_background_title">Ubicación en segundo plano</string>
+    <string name="perm_background_desc">Necesaria para recordarte incluso cuando la app no está abierta.</string>
+    <string name="perm_notifications_title">Notificaciones</string>
+    <string name="perm_notifications_desc">Para mostrarte recordatorios oportunos y acciones rápidas.</string>
+    <string name="permissions_continue">Continuar</string>
+    <string name="permissions_later">Configurar después</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Hola, bienvenido</string>
+    <string name="home_summary">Tienes recordatorios listos para ayudarte en el momento justo.</string>
+    <string name="home_active">Activos</string>
+    <string name="home_pending">Pendientes</string>
+    <string name="home_places">Lugares</string>
+    <string name="home_upcoming">Próximos recordatorios</string>
+    <string name="home_see_all">Ver todo</string>
+    <string name="home_quick_create">Crear recordatorio</string>
+
+    <!-- Reminders -->
+    <string name="reminders_title">Recordatorios</string>
+    <string name="reminders_search">Buscar recordatorios</string>
+    <string name="reminders_empty_title">Sin recordatorios</string>
+    <string name="reminders_empty_desc">Crea tu primer recordatorio y Punto te avisará en el lugar adecuado.</string>
+    <string name="reminders_create">Nuevo recordatorio</string>
+
+    <!-- Create reminder -->
+    <string name="create_title">Nuevo recordatorio</string>
+    <string name="create_edit_title">Editar recordatorio</string>
+    <string name="create_save">Guardar</string>
+    <string name="create_name">Nombre</string>
+    <string name="create_subject">Asunto / categoría</string>
+    <string name="create_description">Descripción</string>
+    <string name="create_location">Ubicación</string>
+    <string name="create_trigger">Tipo de activación</string>
+    <string name="create_dwell">Tiempo de permanencia</string>
+    <string name="create_repeat">Intervalo de repetición</string>
+    <string name="create_limit">Límite de notificaciones</string>
+    <string name="create_saved">Recordatorio guardado (demo)</string>
+
+    <!-- Map / locations -->
+    <string name="map_title">Lugares</string>
+    <string name="map_search">Buscar dirección o lugar</string>
+    <string name="map_saved_places">Lugares guardados</string>
+    <string name="map_add_place">Agregar lugar</string>
+    <string name="map_empty_title">No hay lugares guardados</string>
+    <string name="map_empty_desc">Agrega tus lugares importantes para asociar recordatorios.</string>
+
+    <!-- History -->
+    <string name="history_title">Historial</string>
+    <string name="history_empty_title">Aún no hay historial</string>
+    <string name="history_empty_desc">Cuando completes recordatorios, aparecerán aquí.</string>
+    <string name="history_completed">Completados</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Automático</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="settings_sound">Sonido</string>
+    <string name="settings_vibration">Vibración</string>
+    <string name="settings_behavior">Comportamiento</string>
+    <string name="settings_default_radius">Radio predeterminado</string>
+    <string name="settings_default_dwell">Permanencia predeterminada</string>
+    <string name="settings_default_repeat">Repetición predeterminada</string>
+    <string name="settings_privacy">Privacidad</string>
+    <string name="settings_privacy_desc">Tus ubicaciones y recordatorios se guardan en tu dispositivo.</string>
+
+    <!-- Generic -->
+    <string name="placeholder_screen_title">Próximamente</string>
+    <string name="placeholder_screen_message">Esta sección se implementará en una fase posterior.</string>
+</resources>
