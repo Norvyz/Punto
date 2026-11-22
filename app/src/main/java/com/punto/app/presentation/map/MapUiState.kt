@@ -11,7 +11,6 @@ data class MapUiState(
     val showEditor: Boolean = false,
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
-    val searchQuery: String = "",
 )
 
 data class LocationDraft(

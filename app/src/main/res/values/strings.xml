@@ -65,13 +65,13 @@
     <string name="create_limit">Límite de notificaciones</string>
     <string name="create_saved">Recordatorio guardado (demo)</string>
 
-    <!-- Map / locations -->
+    <!-- Locations -->
     <string name="map_title">Lugares</string>
     <string name="map_search">Buscar dirección o lugar</string>
     <string name="map_saved_places">Lugares guardados</string>
     <string name="map_add_place">Agregar lugar</string>
     <string name="map_empty_title">No hay lugares guardados</string>
-    <string name="map_empty_desc">Agrega tus lugares importantes para asociar recordatorios.</string>
+    <string name="map_empty_desc">Captura tu ubicación actual con GPS para guardar un lugar y asociar recordatorios.</string>
 
     <!-- History -->
     <string name="history_title">Historial</string>

@@ -34,7 +34,7 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    fun onSearchQueryChange(value: String) = _uiState.update { it.copy(searchQuery = value) }
+
 
     fun selectLocation(id: String?) = _uiState.update { it.copy(selectedLocationId = id) }
 

@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,11 +5,6 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.room)
-}
-
-val localProps = Properties().apply {
-    val f = rootProject.file("local.properties")
-    if (f.exists()) f.inputStream().use { load(it) }
 }
 
 android {
@@ -27,15 +20,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Maps API key is injected via manifest placeholder.
-        // Define MAPS_API_KEY in local.properties or as an environment variable.
-        val mapsApiKey = providers.gradleProperty("MAPS_API_KEY")
-            .orElse(providers.environmentVariable("MAPS_API_KEY"))
-            .orElse(provider { localProps.getProperty("MAPS_API_KEY") })
-            .orNull
-            ?.takeIf { it.isNotBlank() }
-            ?: "YOUR_MAPS_API_KEY_HERE"
-        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
     }
 
     buildTypes {
@@ -118,10 +103,8 @@ dependencies {
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 
-    // Maps / Location
+    // Location
     implementation(libs.play.services.location)
-    implementation(libs.play.services.maps)
-    implementation(libs.maps.compose)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
