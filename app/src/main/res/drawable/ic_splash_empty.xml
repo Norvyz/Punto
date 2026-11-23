@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ícono "vacío" del splash del sistema: no se ve nada. El splash del sistema es solo el fondo, y todo el
+  movimiento (pin, mascota, logo) lo hace PuntoIntroOverlay con los colores del tema de la app.
+  Antes el splash mostraba un pin propio y la app dibujaba otro encima, de otro tamaño y color: ese era el salto feo.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,0h24v24h-24z" />
+</vector>

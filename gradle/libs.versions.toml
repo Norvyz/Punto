@@ -5,6 +5,7 @@ ksp = "2.1.10-1.0.31"
 coreKtx = "1.16.0"
 coreSplashscreen = "1.0.1"
 profileinstaller = "1.4.1"
+rive = "11.12.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -24,6 +25,7 @@ desugarJdkLibs = "2.1.5"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
+rive-android = { group = "app.rive", name = "rive-android", version.ref = "rive" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

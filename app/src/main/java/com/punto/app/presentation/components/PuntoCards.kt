@@ -33,6 +33,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.punto.app.presentation.rive.MascotMood
+import com.punto.app.presentation.rive.PuntoRiveFiles
+import com.punto.app.presentation.rive.PuntoRiveProps
+import com.punto.app.presentation.rive.RiveOrFallback
 import com.punto.app.presentation.mock.MockReminder
 import com.punto.app.presentation.mock.containerColor
 import com.punto.app.presentation.mock.contentColor
@@ -135,12 +139,22 @@ fun EmptyState(
         modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(
-            Modifier.size(56.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(28.dp))
-        }
+        // Mascota (Rive) si existe punto_mascot.riv; si no, el círculo con ícono de siempre (la mascota es más grande que el ícono).
+        RiveOrFallback(
+            file = PuntoRiveFiles.MASCOT,
+            artboard = "Mascot",
+            modifier = Modifier.size(120.dp),
+            enumProps = mapOf(PuntoRiveProps.MOOD to MascotMood.SLEEPY.value),
+            reserveSpace = false,
+            fallback = {
+                Box(
+                    Modifier.size(56.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(28.dp))
+                }
+            },
+        )
         Spacer(Modifier.height(12.dp))
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(4.dp))

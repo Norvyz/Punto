@@ -2,6 +2,7 @@ package com.punto.app
 
 import android.graphics.Color as AndroidColor
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,8 +27,9 @@ import com.punto.app.domain.model.AccentColor
 import com.punto.app.domain.model.ThemePreference
 import com.punto.app.domain.repository.UserPreferences
 import com.punto.app.domain.repository.UserPreferencesRepository
-import com.punto.app.presentation.intro.PuntoIntro
+import com.punto.app.presentation.intro.PuntoIntroOverlay
 import com.punto.app.presentation.navigation.PuntoApp
+import com.punto.app.presentation.rive.ProvidePuntoRive
 import com.punto.app.presentation.theme.PuntoTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -82,17 +83,18 @@ class MainActivity : ComponentActivity() {
                         // Ya hay preferencias: la app está compuesta, se puede quitar el splash del sistema.
                         SideEffect { prefsReady = true }
 
-                        // La intro animada solo sale si el tutorial YA se completó antes de abrir la app
-                        // (en la primera apertura se ve el tutorial). Se decide una sola vez al arrancar.
-                        val startedWithSetupDone = remember { current.onboardingCompleted }
+                        // La intro sale en CADA apertura (también la primera, y luego el tutorial).
+                        // Si la persona desactivó las animaciones del sistema, se omite.
+                        val animationsOn = remember {
+                            Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f
+                        }
                         // rememberSaveable: al rotar la pantalla no se vuelve a reproducir.
-                        var introDone by rememberSaveable { mutableStateOf(false) }
-                        LaunchedEffect(Unit) { if (!startedWithSetupDone) introDone = true }
+                        var introDone by rememberSaveable { mutableStateOf(!animationsOn) }
 
-                        Box(Modifier.fillMaxSize()) {
-                            PuntoApp(onboardingCompleted = current.onboardingCompleted)
-                            if (startedWithSetupDone && !introDone) {
-                                PuntoIntro(onFinished = { introDone = true })
+                        ProvidePuntoRive {
+                            Box(Modifier.fillMaxSize()) {
+                                PuntoApp(onboardingCompleted = current.onboardingCompleted)
+                                if (!introDone) PuntoIntroOverlay(onFinished = { introDone = true })
                             }
                         }
                     }

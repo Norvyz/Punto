@@ -32,35 +32,85 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.punto.app.R
+import com.punto.app.presentation.rive.PuntoRiveFiles
+import com.punto.app.presentation.rive.RiveOrFallback
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** Mismo trazo del pin que res/drawable/ic_splash_pin.xml (viewport de 108 x 108). */
+/** Trazo del pin (viewport de 108 x 108). */
 private const val PIN_PATH =
     "M54,24C43.51,24 35,32.51 35,43c0,14.25 19,33 19,33s19,-18.75 19,-33c0,-10.49 -8.51,-19 -19,-19z" +
         "M54,50.5c-4.14,0 -7.5,-3.36 -7.5,-7.5s3.36,-7.5 7.5,-7.5 7.5,3.36 7.5,7.5 -3.36,7.5 -7.5,7.5z"
 
+/** Tiempo máximo que se espera a que un .riv de intro termine (por si no dispara "finished"). */
+private const val RIVE_INTRO_TIMEOUT_MS = 4_000L
+
 /**
- * Animación que se ve cada vez que se abre la app (después del tutorial).
+ * Intro de marca que se ve en CADA apertura de la app (también la primera, antes del tutorial).
  *
- * Continúa el splash del sistema: arranca con el mismo pin, mismo fondo y misma posición. Luego el
- * pin da un salto, cae y se expande la "zona" (las ondas son el radio del geofence), y aparece el
- * nombre. Dura ~1.6 s y se puede saltar tocando la pantalla.
+ * El splash del sistema ahora es solo el color de fondo del tema (sin ícono), así que esta intro
+ * es la única animación y no hay dos pines superpuestos. Todos sus colores salen de
+ * MaterialTheme (modo claro/oscuro + color de acento elegido), por eso siempre cuadra con la app.
  *
- * Se dibuja ENCIMA de la app, así que mientras suena la app ya está cargando sus datos.
+ * Si existe assets/rive/punto_intro.riv se usa Rive; si no, la animación en Compose de abajo.
+ * Se puede saltar tocando la pantalla.
  */
 @Composable
-fun PuntoIntro(onFinished: () -> Unit, modifier: Modifier = Modifier) {
-    val background = colorResource(R.color.punto_splash_background)
-    val pinColor = colorResource(R.color.punto_splash_icon)
+fun PuntoIntroOverlay(onFinished: () -> Unit, modifier: Modifier = Modifier) {
+    var finished by remember { mutableStateOf(false) }
+    val latest by rememberUpdatedState(onFinished)
+    val finish: () -> Unit = {
+        if (!finished) {
+            finished = true
+            latest()
+        }
+    }
+    val alpha = remember { Animatable(1f) }
+    var closing by remember { mutableStateOf(false) }
+    LaunchedEffect(closing) {
+        if (closing) {
+            alpha.animateTo(0f, tween(250))
+            finish()
+        }
+    }
+    val close: () -> Unit = { closing = true }
+
+    Box(
+        modifier
+            .fillMaxSize()
+            .graphicsLayer { this.alpha = alpha.value }
+            .background(MaterialTheme.colorScheme.background)
+            // Toque = saltar; además evita que los toques atraviesen hacia la app.
+            .pointerInput(Unit) { detectTapGestures { close() } },
+    ) {
+        RiveOrFallback(
+            file = PuntoRiveFiles.INTRO,
+            artboard = "Intro",
+            modifier = Modifier.fillMaxSize(),
+            onFinished = close,
+            reserveSpace = false,
+            fallback = { PuntoIntroCompose(onDone = close) },
+        )
+        // Seguro: si hay .riv pero nunca avisa que terminó, se cierra igual.
+        LaunchedEffect(Unit) {
+            delay(RIVE_INTRO_TIMEOUT_MS)
+            close()
+        }
+    }
+}
+
+@Composable
+private fun PuntoIntroCompose(onDone: () -> Unit) {
+    val pinColor = MaterialTheme.colorScheme.primary
+    val titleColor = MaterialTheme.colorScheme.onBackground
     val accent = MaterialTheme.colorScheme.primary
-    val pinPath = remember { PathParser().parsePathString(PIN_PATH).toPath() }
+    val pinPath = remember { PathParser().parsePathString(PIN_PATH).toPath().apply { fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd } }
+    val latestDone by rememberUpdatedState(onDone)
 
     val hop = remember { Animatable(0f) }
     val ripple1 = remember { Animatable(0f) }
@@ -68,16 +118,6 @@ fun PuntoIntro(onFinished: () -> Unit, modifier: Modifier = Modifier) {
     val zone = remember { Animatable(0f) }
     val title = remember { Animatable(0f) }
     val tagline = remember { Animatable(0f) }
-    val overlayAlpha = remember { Animatable(1f) }
-
-    var finished by remember { mutableStateOf(false) }
-    val latestOnFinished by rememberUpdatedState(onFinished)
-    fun finish() {
-        if (!finished) {
-            finished = true
-            latestOnFinished()
-        }
-    }
 
     LaunchedEffect(Unit) {
         coroutineScope {
@@ -97,21 +137,13 @@ fun PuntoIntro(onFinished: () -> Unit, modifier: Modifier = Modifier) {
             launch { delay(450); title.animateTo(1f, tween(400, easing = FastOutSlowInEasing)) }
             launch { delay(700); tagline.animateTo(1f, tween(400, easing = FastOutSlowInEasing)) }
         }
-        delay(150)
-        overlayAlpha.animateTo(0f, tween(250))
-        finish()
+        delay(500)
+        latestDone()
     }
 
-    Box(
-        modifier
-            .fillMaxSize()
-            .graphicsLayer { alpha = overlayAlpha.value }
-            .background(background)
-            // Toque = saltar. También evita que los toques "atraviesen" hacia la app que hay debajo.
-            .pointerInput(Unit) { detectTapGestures { finish() } },
-    ) {
+    Box(Modifier.fillMaxSize()) {
         Canvas(Modifier.fillMaxSize()) {
-            val unit = 288.dp.toPx() / 108f // misma escala que el ícono del splash (288dp = 108 unidades)
+            val unit = 150.dp.toPx() / 108f
             val cx = size.width / 2f
             val cy = size.height / 2f
             val origin = Offset(cx - 54f * unit, cy - 54f * unit)
@@ -149,21 +181,20 @@ fun PuntoIntro(onFinished: () -> Unit, modifier: Modifier = Modifier) {
                 scale(unit, unit, pivot = Offset.Zero)
             }) {
                 drawPath(pinPath, color = pinColor)
-                drawCircle(color = pinColor, radius = 3.5f, center = Offset(54f, 43f))
             }
         }
 
         Column(
             Modifier
                 .align(Alignment.Center)
-                .offset(y = 130.dp),
+                .offset(y = 100.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = pinColor,
+                color = titleColor,
                 modifier = Modifier.graphicsLayer {
                     alpha = title.value
                     translationY = (1f - title.value) * 16.dp.toPx()
@@ -172,7 +203,7 @@ fun PuntoIntro(onFinished: () -> Unit, modifier: Modifier = Modifier) {
             Text(
                 text = stringResource(R.string.intro_tagline),
                 style = MaterialTheme.typography.bodyMedium,
-                color = pinColor.copy(alpha = 0.75f),
+                color = titleColor.copy(alpha = 0.7f),
                 modifier = Modifier.graphicsLayer {
                     alpha = tagline.value
                     translationY = (1f - tagline.value) * 12.dp.toPx()

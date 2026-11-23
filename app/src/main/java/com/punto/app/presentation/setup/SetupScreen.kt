@@ -71,6 +71,10 @@ import com.punto.app.presentation.components.AccentSwatches
 import com.punto.app.presentation.components.StatusPill
 import com.punto.app.presentation.components.ThemeSegmentedRow
 import com.punto.app.presentation.permissions.PermissionsContent
+import com.punto.app.presentation.rive.MascotMood
+import com.punto.app.presentation.rive.PuntoRiveFiles
+import com.punto.app.presentation.rive.PuntoRiveProps
+import com.punto.app.presentation.rive.RiveOrFallback
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -115,9 +119,9 @@ fun SetupScreen(onFinished: () -> Unit, viewModel: SetupViewModel = hiltViewMode
                 val active = pagerState.currentPage == page
                 when (page) {
                     0 -> WelcomePage(active)
-                    1 -> TutorialPage(active, 1, R.string.onboarding_1_title, R.string.onboarding_1_desc) { PlaceAnimation(active) }
-                    2 -> TutorialPage(active, 2, R.string.onboarding_2_title, R.string.onboarding_2_desc) { ReminderAnimation(active) }
-                    3 -> TutorialPage(active, 3, R.string.onboarding_3_title, R.string.onboarding_3_desc) { AlertAnimation(active) }
+                    1 -> TutorialPage(active, 1, R.string.onboarding_1_title, R.string.onboarding_1_desc) { TutorialIllustration(active, 1) { PlaceAnimation(active) } }
+                    2 -> TutorialPage(active, 2, R.string.onboarding_2_title, R.string.onboarding_2_desc) { TutorialIllustration(active, 2) { ReminderAnimation(active) } }
+                    3 -> TutorialPage(active, 3, R.string.onboarding_3_title, R.string.onboarding_3_desc) { TutorialIllustration(active, 3) { AlertAnimation(active) } }
                     4 -> AppearancePage(
                         active = active,
                         theme = prefs.theme,
@@ -224,12 +228,21 @@ private fun WelcomePage(active: Boolean) {
     )
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Reveal(active) {
-            Box(contentAlignment = Alignment.Center) {
-                Box(Modifier.size(156.dp).scale(pulse).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)))
-                Box(Modifier.size(116.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Outlined.LocationOn, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(56.dp))
-                }
-            }
+            RiveOrFallback(
+                file = PuntoRiveFiles.MASCOT,
+                artboard = "Mascot",
+                modifier = Modifier.size(200.dp),
+                active = active,
+                enumProps = mapOf(PuntoRiveProps.MOOD to MascotMood.HAPPY.value),
+                fallback = {
+                    Box(contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(156.dp).scale(pulse).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)))
+                        Box(Modifier.size(116.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+                            Icon(Icons.Outlined.LocationOn, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(56.dp))
+                        }
+                    }
+                },
+            )
         }
         Spacer(Modifier.height(28.dp))
         Reveal(active, 150) {
@@ -272,6 +285,18 @@ private fun TutorialPage(
         Spacer(Modifier.height(24.dp))
         PageHeader(stringResource(titleRes), stringResource(descRes), active, 250)
     }
+}
+
+/** Ilustración del paso [step]: artboard "Step N" del .riv si existe; si no, la animación en Compose. */
+@Composable
+private fun TutorialIllustration(active: Boolean, step: Int, fallback: @Composable () -> Unit) {
+    RiveOrFallback(
+        file = PuntoRiveFiles.TUTORIAL,
+        artboard = "Step$step",
+        modifier = Modifier.size(width = 280.dp, height = 220.dp),
+        active = active,
+        fallback = fallback,
+    )
 }
 
 // ───────────────────────── Página 5: apariencia ─────────────────────────
