@@ -81,7 +81,13 @@ class MapViewModel @Inject constructor(
     fun updateDraft(transform: (LocationDraft) -> LocationDraft) =
         _uiState.update { it.copy(draft = transform(it.draft)) }
 
-    fun saveDraft() {
+    /** Recibe los textos escritos en la hoja (viven en estado local mientras se teclea). */
+    fun saveDraft(name: String, address: String) {
+        updateDraft { it.copy(name = name, address = address) }
+        persistDraft()
+    }
+
+    private fun persistDraft() {
         val draft = _uiState.value.draft
         val lat = draft.latitude ?: return
         val lng = draft.longitude ?: return

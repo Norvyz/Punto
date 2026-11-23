@@ -28,7 +28,10 @@ android {
             isMinifyEnabled = false
         }
         release {
-            isMinifyEnabled = false
+            // R8 + recorte de recursos: la app release es bastante más rápida y liviana que la debug.
+            // Si algo falla SOLO en release, vuelve estos dos a false y avísame para agregar reglas keep.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -67,6 +70,8 @@ room {
 dependencies {
     // Core
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

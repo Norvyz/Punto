@@ -37,8 +37,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,8 +56,10 @@ import com.punto.app.presentation.components.EmptyState
 import com.punto.app.presentation.components.ReminderCard
 import com.punto.app.presentation.mock.MockReminder
 import com.punto.app.presentation.mock.label
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun RemindersScreen(
     onCreateReminder: () -> Unit = {},
@@ -64,9 +70,20 @@ fun RemindersScreen(
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(state.errorMessage) { state.errorMessage?.let { snackbar.showSnackbar(it); viewModel.dismissError() } }
 
-    val filtered = state.reminders.filter { it.matchesFilter(state.filter) }.filter { r ->
-        val loc = state.locationsById[r.locationId]?.name.orEmpty()
-        state.query.isBlank() || r.title.contains(state.query, true) || (r.subject ?: "").contains(state.query, true) || loc.contains(state.query, true)
+    // El texto del buscador vive aquí (instantáneo al teclear); el filtro se aplica con un pequeño
+    // debounce para no recalcular y recomponer la lista completa en cada letra.
+    val searchState = rememberSaveable { mutableStateOf(state.query) }
+    LaunchedEffect(Unit) {
+        snapshotFlow { searchState.value }
+            .debounce(250)
+            .collect { viewModel.onQueryChange(it) }
+    }
+
+    val filtered = remember(state.reminders, state.filter, state.query, state.locationsById) {
+        state.reminders.filter { it.matchesFilter(state.filter) }.filter { r ->
+            val loc = state.locationsById[r.locationId]?.name.orEmpty()
+            state.query.isBlank() || r.title.contains(state.query, true) || (r.subject ?: "").contains(state.query, true) || loc.contains(state.query, true)
+        }
     }
 
     Scaffold(
@@ -75,12 +92,7 @@ fun RemindersScreen(
         floatingActionButton = { FloatingActionButton(onClick = onCreateReminder) { Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.reminders_create)) } }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp)) {
-            OutlinedTextField(
-                value = state.query, onValueChange = viewModel::onQueryChange, modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.reminders_search)) },
-                leadingIcon = { Icon(Icons.Outlined.Search, null) }, singleLine = true,
-                shape = MaterialTheme.shapes.extraLarge,
-            )
+            SearchField(searchState, Modifier.fillMaxWidth())
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(ReminderFilter.entries) { filter ->
@@ -108,6 +120,20 @@ fun RemindersScreen(
             }
         }
     }
+}
+
+/** Campo de búsqueda con estado local: solo este campo se recompone al teclear. */
+@Composable
+private fun SearchField(state: MutableState<String>, modifier: Modifier = Modifier) {
+    OutlinedTextField(
+        value = state.value,
+        onValueChange = { state.value = it },
+        modifier = modifier,
+        placeholder = { Text(stringResource(R.string.reminders_search)) },
+        leadingIcon = { Icon(Icons.Outlined.Search, null) },
+        singleLine = true,
+        shape = MaterialTheme.shapes.extraLarge,
+    )
 }
 
 @Composable

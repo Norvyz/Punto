@@ -35,9 +35,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
@@ -50,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.punto.app.R
 import com.punto.app.domain.model.ReminderStatus
 import com.punto.app.domain.model.TriggerType
+import com.punto.app.presentation.components.StateOutlinedTextField
 import com.punto.app.presentation.mock.label
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -57,6 +60,23 @@ import com.punto.app.presentation.mock.label
 fun CreateReminderScreen(onBack: () -> Unit, onSaved: () -> Unit = onBack, viewModel: CreateReminderViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+
+    // Los textos viven aquí (estado local): escribir ya no pasa por el ViewModel en cada tecla.
+    val nameState = rememberSaveable { mutableStateOf("") }
+    val subjectState = rememberSaveable { mutableStateOf("") }
+    val descriptionState = rememberSaveable { mutableStateOf("") }
+    var seeded by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(state.initialLoaded) {
+        // Se copian UNA sola vez (al abrir / al terminar de cargar el recordatorio a editar).
+        if (state.initialLoaded && !seeded) {
+            nameState.value = state.name
+            subjectState.value = state.subject
+            descriptionState.value = state.description
+            seeded = true
+        }
+    }
+    // Solo cambia cuando el nombre pasa de vacío a no vacío (no recompone por cada letra).
+    val nameNotBlank by remember { derivedStateOf { nameState.value.isNotBlank() } }
 
     LaunchedEffect(state.saved) { if (state.saved) onSaved() }
     LaunchedEffect(state.errorMessage) { state.errorMessage?.let { snackbar.showSnackbar(it); viewModel.dismissError() } }
@@ -73,8 +93,8 @@ fun CreateReminderScreen(onBack: () -> Unit, onSaved: () -> Unit = onBack, viewM
         bottomBar = {
             Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
                 Button(
-                    onClick = viewModel::save,
-                    enabled = state.canSave,
+                    onClick = { viewModel.save(nameState.value, subjectState.value, descriptionState.value) },
+                    enabled = nameNotBlank && state.selectedLocationId != null && !state.isSaving,
                     modifier = Modifier
                         .imePadding()
                         .navigationBarsPadding()
@@ -95,10 +115,10 @@ fun CreateReminderScreen(onBack: () -> Unit, onSaved: () -> Unit = onBack, viewM
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            OutlinedTextField(state.name, viewModel::onName, label = { Text(stringResource(R.string.create_name)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            StateOutlinedTextField(nameState, stringResource(R.string.create_name), Modifier.fillMaxWidth())
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(state.subject, viewModel::onSubject, label = { Text(stringResource(R.string.create_subject)) }, modifier = Modifier.weight(1f), singleLine = true)
+                StateOutlinedTextField(subjectState, stringResource(R.string.create_subject), Modifier.weight(1f))
                 if (state.locations.isEmpty()) {
                     Text(
                         "Primero crea un lugar en el mapa.",
@@ -112,7 +132,7 @@ fun CreateReminderScreen(onBack: () -> Unit, onSaved: () -> Unit = onBack, viewM
                 }
             }
 
-            OutlinedTextField(state.description, viewModel::onDescription, label = { Text(stringResource(R.string.create_description)) }, modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 4)
+            StateOutlinedTextField(descriptionState, stringResource(R.string.create_description), Modifier.fillMaxWidth(), singleLine = false, minLines = 2, maxLines = 4)
 
             Text(stringResource(R.string.create_trigger), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
@@ -143,21 +163,21 @@ fun CreateReminderScreen(onBack: () -> Unit, onSaved: () -> Unit = onBack, viewM
                 }
             }
 
-            ReminderSummary(state)
+            val selectedLocationName = state.locations.firstOrNull { it.id == state.selectedLocationId }?.name ?: "—"
+            ReminderSummary(state.triggerType, state.dwellMinutes, state.repeatIntervalMinutes, selectedLocationName)
         }
     }
 }
 
 @Composable
-private fun ReminderSummary(state: CreateReminderUiState) {
-    val location = state.locations.firstOrNull { it.id == state.selectedLocationId }?.name ?: "—"
-    val whenText = when (state.triggerType) {
+private fun ReminderSummary(triggerType: TriggerType, dwellMinutes: Int, repeatIntervalMinutes: Int?, location: String) {
+    val whenText = when (triggerType) {
         TriggerType.ON_ENTER -> "Al llegar a $location"
-        TriggerType.ON_DWELL -> "Al permanecer ${state.dwellMinutes} min en $location"
+        TriggerType.ON_DWELL -> "Al permanecer $dwellMinutes min en $location"
         TriggerType.ON_EXIT -> "Al salir de $location"
         TriggerType.ALREADY_INSIDE -> "Si ya estás dentro de $location al crear"
     }
-    val repeatText = state.repeatIntervalMinutes?.let { "repite cada $it min" } ?: "sin repetición"
+    val repeatText = repeatIntervalMinutes?.let { "repite cada $it min" } ?: "sin repetición"
     Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.surfaceContainerLow, modifier = Modifier.fillMaxWidth().animateContentSize()) {
         Text(
             "$whenText · $repeatText",

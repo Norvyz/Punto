@@ -3,6 +3,8 @@ package com.punto.app.presentation.navigation
 object PuntoRoutes {
     /** Configuración inicial: solo la primera vez que se abre la app. */
     const val SETUP = "setup"
+    /** El mismo tutorial animado, pero abierto a pedido desde Ajustes (al terminar solo vuelve atrás). */
+    const val TUTORIAL = "tutorial"
     const val MAIN = "main"
     const val CREATE_REMINDER = "create_reminder"
     const val EDIT_REMINDER = "create_reminder?reminderId={reminderId}"

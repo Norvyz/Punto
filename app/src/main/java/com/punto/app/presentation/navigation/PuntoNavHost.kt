@@ -22,6 +22,7 @@ fun PuntoNavHost(
     modifier: Modifier = Modifier,
     onCreateReminder: () -> Unit = {},
     onEditReminder: (String) -> Unit = {},
+    onShowTutorial: () -> Unit = {},
 ) {
     NavHost(
         navController = navController,
@@ -36,6 +37,6 @@ fun PuntoNavHost(
         composable(PuntoDestination.MAP.route) { MapScreen() }
         composable(PuntoDestination.REMINDERS.route) { RemindersScreen(onCreateReminder = onCreateReminder, onEditReminder = onEditReminder) }
         composable(PuntoDestination.HISTORY.route) { HistoryScreen() }
-        composable(PuntoDestination.SETTINGS.route) { SettingsScreen() }
+        composable(PuntoDestination.SETTINGS.route) { SettingsScreen(onShowTutorial = onShowTutorial) }
     }
 }

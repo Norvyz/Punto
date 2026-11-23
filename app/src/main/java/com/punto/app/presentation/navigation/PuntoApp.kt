@@ -57,10 +57,14 @@ fun PuntoApp(onboardingCompleted: Boolean) {
                 },
             )
         }
+        composable(PuntoRoutes.TUTORIAL) {
+            SetupScreen(onFinished = { rootNavController.popBackStack() })
+        }
         composable(PuntoRoutes.MAIN) {
             MainScaffold(
                 onCreateReminder = { rootNavController.navigate(PuntoRoutes.CREATE_REMINDER) },
                 onEditReminder = { id -> rootNavController.navigate(PuntoRoutes.editReminder(id)) },
+                onShowTutorial = { rootNavController.navigate(PuntoRoutes.TUTORIAL) },
             )
         }
         composable(PuntoRoutes.CREATE_REMINDER) {
@@ -76,7 +80,7 @@ fun PuntoApp(onboardingCompleted: Boolean) {
 }
 
 @Composable
-private fun MainScaffold(onCreateReminder: () -> Unit, onEditReminder: (String) -> Unit) {
+private fun MainScaffold(onCreateReminder: () -> Unit, onEditReminder: (String) -> Unit, onShowTutorial: () -> Unit) {
     val navController = rememberNavController()
     val destinations = PuntoDestination.entries
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -127,6 +131,6 @@ private fun MainScaffold(onCreateReminder: () -> Unit, onEditReminder: (String) 
             }
         },
     ) { innerPadding ->
-        PuntoNavHost(navController = navController, modifier = Modifier.padding(innerPadding), onCreateReminder = onCreateReminder, onEditReminder = onEditReminder)
+        PuntoNavHost(navController = navController, modifier = Modifier.padding(innerPadding), onCreateReminder = onCreateReminder, onEditReminder = onEditReminder, onShowTutorial = onShowTutorial)
     }
 }

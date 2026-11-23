@@ -22,6 +22,19 @@
     <string name="onboarding_3_title">Recibe avisos oportunos</string>
     <string name="onboarding_3_desc">Punto te recuerda en el momento adecuado y puede repetir hasta que lo completes.</string>
 
+    <!-- Intro de arranque -->
+    <string name="intro_tagline">Tu recordatorio, en el lugar correcto</string>
+
+    <!-- Tutorial animado -->
+    <string name="tutorial_step">Paso %1$d de 3</string>
+    <string name="tutorial_place_chip">Casa · 150 m</string>
+    <string name="tutorial_place_name">Casa</string>
+    <string name="tutorial_reminder_sample">Votar la basura</string>
+    <string name="tutorial_trigger_arrive">Al llegar</string>
+    <string name="tutorial_trigger_leave">Al salir</string>
+    <string name="tutorial_alert_title">Votar la basura</string>
+    <string name="tutorial_alert_body">Llegaste a Casa</string>
+
     <!-- Permissions -->
     <string name="permissions_title">Permisos necesarios</string>
     <string name="permissions_subtitle">Punto usa la ubicación solo para activar tus recordatorios en el lugar correcto.</string>
@@ -93,6 +106,9 @@
     <string name="settings_default_radius">Radio predeterminado</string>
     <string name="settings_default_dwell">Permanencia predeterminada</string>
     <string name="settings_default_repeat">Repetición predeterminada</string>
+    <string name="settings_help">Ayuda</string>
+    <string name="settings_replay_tutorial">Ver tutorial</string>
+    <string name="settings_replay_tutorial_desc">Repite la guía animada de cómo funciona Punto.</string>
     <string name="settings_privacy">Privacidad</string>
     <string name="settings_privacy_desc">Tus ubicaciones y recordatorios se guardan en tu dispositivo.</string>
 
